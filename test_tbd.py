@@ -15,3 +15,5 @@ df2 = pd.DataFrame(
 columns=['chrom', 'start', 'end' ]
 )
 counts = pb.count_overlaps(df1, df2, output_type="pandas.DataFrame")
+
+kmers = pb.count_kmers("tests/data/io/fastq/test.fastq", 5)

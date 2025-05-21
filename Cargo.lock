@@ -5436,6 +5436,7 @@ dependencies = [
  "fnv",
  "futures",
  "futures-util",
+ "hex",
  "log",
  "needletail",
  "polars",
