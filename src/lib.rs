@@ -20,6 +20,7 @@ use polars_lazy::prelude::{LazyFrame, ScanArgsAnonymous};
 use polars_python::error::PyPolarsErr;
 use polars_python::lazyframe::PyLazyFrame;
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 use tokio::runtime::Runtime;
 
 use crate::context::PyBioSessionContext;
@@ -34,6 +35,19 @@ use crate::utils::convert_arrow_rb_schema_to_polars_df_schema;
 const LEFT_TABLE: &str = "s1";
 const RIGHT_TABLE: &str = "s2";
 const DEFAULT_COLUMN_NAMES: [&str; 3] = ["contig", "start", "end"];
+
+#[pyfunction]
+pub fn count_kmers(path: String, k: u8) -> PyResult<PyObject> {
+    let kmers = crate::kmer::count_kmers_from_fastq(&path, k);
+    Python::with_gil(|py| {
+        let dict = PyDict::new(py);
+        for (kmer, count) in kmers {
+            let key = std::str::from_utf8(&kmer).unwrap_or("???").to_string();
+            dict.set_item(key, count)?;
+        }
+        Ok(dict.into())
+    })
+}
 
 #[pyfunction]
 #[pyo3(signature = (py_ctx, df1, df2, range_options, limit=None))]
@@ -417,6 +431,7 @@ fn polars_bio(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_describe_vcf, m)?)?;
     m.add_function(wrap_pyfunction!(py_register_view, m)?)?;
     m.add_function(wrap_pyfunction!(py_from_polars, m)?)?;
+    m.add_function(wrap_pyfunction!(count_kmers, m)?)?;
     // m.add_function(wrap_pyfunction!(unary_operation_scan, m)?)?;
     m.add_class::<PyBioSessionContext>()?;
     m.add_class::<FilterOp>()?;
