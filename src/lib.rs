@@ -21,7 +21,6 @@ use polars_lazy::prelude::{LazyFrame, ScanArgsAnonymous};
 use polars_python::error::PyPolarsErr;
 use polars_python::lazyframe::PyLazyFrame;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
 use tokio::runtime::Runtime;
 use crate::kmers::count_kmers_from_fastq;
 use crate::context::PyBioSessionContext;
