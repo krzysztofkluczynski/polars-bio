@@ -1,5 +1,7 @@
 import polars_bio as pb
 import pandas as pd
+from polars_bio.io import read_fastq
+
 
 df1 = pd.DataFrame([
     ['chr1', 1, 5],
@@ -16,5 +18,6 @@ columns=['chrom', 'start', 'end' ]
 )
 counts = pb.count_overlaps(df1, df2, output_type="pandas.DataFrame")
 
-kmers = pb.count_kmers("example.fastq", 5)
-print(kmers['AAAAA'])
+df = read_fastq("example.fastq")
+counts = pb.count_kmers(df, k=5)
+print(counts)

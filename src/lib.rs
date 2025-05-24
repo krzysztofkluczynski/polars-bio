@@ -39,22 +39,22 @@ const DEFAULT_COLUMN_NAMES: [&str; 3] = ["contig", "start", "end"];
 
 /// Count k-mers and return a native Python dict (via HashMap<String, u64>)
 #[pyfunction]
-pub fn py_count_kmer(path: String, k: u8) -> PyResult<HashMap<String, u64>> {
-    let kmers = count_kmers_from_fastq(&path, k);
+pub fn py_count_kmer(sequences: Vec<String>, k: usize) -> PyResult<HashMap<String, u64>> {
+    let mut counts: HashMap<String, u64> = HashMap::new();
 
-    // Convert Vec<u8> k-mers to String (UTF-8 or hex fallback)
-    let result: HashMap<String, u64> = kmers
-        .into_iter()
-        .map(|(kmer, count)| {
-            let key = match std::str::from_utf8(&kmer) {
-                Ok(s) => s.to_string(),
-                Err(_) => hex::encode(&kmer),
-            };
-            (key, count)
-        })
-        .collect();
+    for seq in sequences {
+        let bytes = seq.as_bytes();
+        for i in 0..=bytes.len().saturating_sub(k) {
+            let kmer = &bytes[i..i + k];
+            if kmer.contains(&b'N') || kmer.contains(&b'n') {
+                continue;
+            }
+            let kmer_str = std::str::from_utf8(kmer).unwrap_or("").to_string();
+            *counts.entry(kmer_str).or_insert(0) += 1;
+        }
+    }
 
-    Ok(result)
+    Ok(counts)
 }
 
 

@@ -1,22 +1,28 @@
-from polars_bio.polars_bio import py_count_kmer
+import polars as pl
+from polars_bio.polars_bio import py_count_kmer  # Rust extension (compiled)
 
 def count_kmers(
-    path: str,
-    k: int = 5
+    df: pl.DataFrame,
+    k: int = 5,
+    column: str = "sequence"
 ) -> dict:
     """
-    Count k-mers in a FASTQ file.
- 
+    Count k-mers from a Polars DataFrame.
+
     Parameters
     ----------
-    path : str
-        Path to the FASTQ file.
+    df : pl.DataFrame
+        DataFrame with a column containing DNA sequences.
     k : int
         Length of the k-mers.
- 
+    column : str
+        Name of the column with DNA sequences (default: "sequence")
+
     Returns
     -------
     dict
         Mapping of k-mer string → count.
     """
-    return py_count_kmer(path, k)
+    # Extract column as list of strings
+    sequences = df.select(column).collect()[column].to_list()
+    return py_count_kmer(sequences, k)
