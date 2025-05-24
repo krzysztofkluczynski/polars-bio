@@ -10,7 +10,6 @@ pub mod kmers;
 
 use std::string::ToString;
 use std::sync::{Arc, Mutex};
-
 use datafusion::arrow::ffi_stream::ArrowArrayStreamReader;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::datasource::MemTable;
@@ -39,21 +38,7 @@ const DEFAULT_COLUMN_NAMES: [&str; 3] = ["contig", "start", "end"];
 /// Count k-mers and return a native Python dict (via HashMap<String, u64>)
 #[pyfunction]
 pub fn py_count_kmer(sequences: Vec<String>, k: usize) -> PyResult<HashMap<String, u64>> {
-    let mut counts: HashMap<String, u64> = HashMap::new();
-
-    for seq in sequences {
-        let bytes = seq.as_bytes();
-        for i in 0..=bytes.len().saturating_sub(k) {
-            let kmer = &bytes[i..i + k];
-            if kmer.contains(&b'N') || kmer.contains(&b'n') {
-                continue;
-            }
-            let kmer_str = std::str::from_utf8(kmer).unwrap_or("").to_string();
-            *counts.entry(kmer_str).or_insert(0) += 1;
-        }
-    }
-
-    Ok(counts)
+    Ok(kmers::do_count_kmers(sequences, k))
 }
 
 

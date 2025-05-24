@@ -21,3 +21,5 @@ counts = pb.count_overlaps(df1, df2, output_type="pandas.DataFrame")
 df = read_fastq("tests/data/io/fastq/test.fastq")
 counts = pb.count_kmers(df, k=3)
 print(counts)
+
+
