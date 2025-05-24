@@ -1,4 +1,4 @@
-from polars_bio.polars_bio import count_kmer
+from polars_bio.polars_bio import py_count_kmer
 
 def count_kmers(
     path: str,
@@ -19,4 +19,4 @@ def count_kmers(
     dict
         Mapping of k-mer string → count.
     """
-    return count_kmer(path, k)
+    return py_count_kmer(path, k)
