@@ -22,7 +22,6 @@ use polars_python::error::PyPolarsErr;
 use polars_python::lazyframe::PyLazyFrame;
 use pyo3::prelude::*;
 use tokio::runtime::Runtime;
-use crate::kmers::count_kmers_from_fastq;
 use crate::context::PyBioSessionContext;
 use crate::operation::do_range_operation;
 use crate::option::{

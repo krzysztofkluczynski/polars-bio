@@ -1,18 +1,17 @@
 import polars as pl
-from polars_bio.polars_bio import py_count_kmer  # Rust extension (compiled)
+from polars_bio.polars_bio import py_count_kmer  # Rust -> dict
 
 def count_kmers(
-    df: pl.DataFrame,
-    k: int = 5,
-    column: str = "sequence"
-) -> dict:
+    df: pl.LazyFrame,
+    k: int = 5
+) -> pl.DataFrame:
     """
-    Count k-mers from a Polars DataFrame.
+    Count k-mers from a Polars LazyFrame.
 
     Parameters
     ----------
-    df : pl.DataFrame
-        DataFrame with a column containing DNA sequences.
+    df : pl.LazyFrame
+        LazyFrame with a column containing DNA sequences.
     k : int
         Length of the k-mers.
     column : str
@@ -20,9 +19,13 @@ def count_kmers(
 
     Returns
     -------
-    dict
-        Mapping of k-mer string → count.
+    pl.DataFrame
+        DataFrame with two columns: kmer (str), count (int)
     """
-    # Extract column as list of strings
-    sequences = df.select(column).collect()[column].to_list()
-    return py_count_kmer(sequences, k)
+    sequences = df.select("sequence").collect()["sequence"].to_list()
+    raw_counts = py_count_kmer(sequences, k)
+
+    return pl.DataFrame({
+        "kmer": list(raw_counts.keys()),
+        "count": list(raw_counts.values())
+    })
