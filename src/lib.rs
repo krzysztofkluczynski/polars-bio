@@ -41,29 +41,26 @@ pub fn py_count_kmer_from_reader(
     df1: PyArrowType<ArrowArrayStreamReader>,
     k: usize,
 ) -> PyResult<PyDataFrame> {
-    // Register input Arrow stream to DataFusion context under a table name
+
     register_frame(py_ctx, df1, LEFT_TABLE.to_string());
 
     let rt = Runtime::new()?;
     let ctx = &py_ctx.ctx;
 
-    // Extract parallelism setting for debugging or future customization
-    let num_partitions = ctx
-        .session
-        .state()
-        .config()
-        .options()
-        .execution
-        .target_partitions;
+    let temp_target_partitions = py_ctx.get_option("datafusion.execution.target_partitions");
+    let num_threads = match temp_target_partitions {
+        Some(val) => val.parse::<usize>().unwrap_or(1),
+        None => 1,
+    };
 
-    log::debug!("Using {} thread partitions for k-mer computation", num_partitions);
+    log::debug!("Using {} thread partitions for k-mer computation", num_threads);
 
-    // Call core k-mer computation
-    let df = compute_kmers(ctx, &rt, LEFT_TABLE.to_string(), k)
+    let df = compute_kmers(ctx, &rt, LEFT_TABLE.to_string(), k, num_threads)
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
     Ok(PyDataFrame::new(df))
 }
+
 
 
 

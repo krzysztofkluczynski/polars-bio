@@ -2,7 +2,7 @@ use arrow::array::{Array, Int64Array, LargeStringArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use datafusion::dataframe::DataFrame;
-use datafusion::error::{Result};
+use datafusion::error::Result;
 use exon::ExonSession;
 use std::collections::HashMap;
 use std::error::Error;
@@ -40,6 +40,7 @@ pub fn compute_kmers(
     rt: &Runtime,
     table_name: String,
     k: usize,
+    num_threads: usize,
 ) -> Result<DataFrame, Box<dyn Error>> {
     let query = format!("SELECT sequence FROM {}", table_name);
     let df = rt.block_on(ctx.sql(&query))?;
@@ -48,11 +49,15 @@ pub fn compute_kmers(
     let global_counts: Arc<Mutex<HashMap<String, i64>>> = Arc::new(Mutex::new(HashMap::new()));
     let mut handles = vec![];
 
-    // Get the number of threads from execution.target_partitions
-    
-    let num_threads: usize = 4;
-
+    let num_threads = num_threads.max(1); // ensure >=1
     let batches_per_thread = (batches.len() + num_threads - 1) / num_threads;
+    
+    println!(
+        "K-mer compute using {} thread(s), {} batch(es) total, ~{} batch(es)/thread",
+        num_threads,
+        batches.len(),
+        batches_per_thread
+    );
 
     for chunk in batches.chunks(batches_per_thread) {
         let chunk = chunk.to_vec();
