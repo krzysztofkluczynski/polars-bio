@@ -12,7 +12,7 @@ crate-type= ["cdylib"]
 
 [dependencies]
 datafusion-python = { git = "https://github.com/apache/datafusion-python.git", rev = "5c834934dec89bd96ff70df3b278e9d6fe78f7ec"}
-pyo3 = { version = "0.22"}
+pyo3 = { version = "0.22", features = ["extension-module"] }
 pyo3-log = "0.11.0"
 sequila-core = { git = "https://github.com/biodatageeks/sequila-native.git", rev = "43453dca320cc25a02f440850e3b947b813785c3" }
 
@@ -43,3 +43,6 @@ coitrees = "0.4.0"
 fnv = "1.0.7"
 async-stream = "0.3.6"
 rand = "0.8.5"
+needletail = "0.5"
+rustc-hash = "1.1"
+hex = "0.4"

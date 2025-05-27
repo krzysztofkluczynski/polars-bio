@@ -1132,6 +1132,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "buffer-redux"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e8acf87c5b9f5897cd3ebb9a327f420e0cae9dd4e5c1d2e36f2c84c571a58f1"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3930,6 +3939,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "needletail"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db05a5ab397f64070d8c998fa0fbb84e484b81f95752af317dac183a82d9295d"
+dependencies = [
+ "buffer-redux",
+ "bytecount",
+ "bzip2 0.4.4",
+ "flate2",
+ "memchr",
+ "xz2",
+]
+
+[[package]]
 name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5413,7 +5436,9 @@ dependencies = [
  "fnv",
  "futures",
  "futures-util",
+ "hex",
  "log",
+ "needletail",
  "polars",
  "polars-arrow",
  "polars-core",
@@ -5423,6 +5448,7 @@ dependencies = [
  "pyo3",
  "pyo3-log",
  "rand",
+ "rustc-hash 1.1.0",
  "sequila-core",
  "tokio",
  "tracing",
