@@ -2,7 +2,7 @@ use arrow::array::{Array, Int64Array, LargeStringArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use datafusion::dataframe::DataFrame;
-use datafusion::error::{DataFusionError, Result};
+use datafusion::error::{Result};
 use exon::ExonSession;
 use std::collections::HashMap;
 use std::error::Error;
@@ -48,42 +48,52 @@ pub fn compute_kmers(
     let global_counts: Arc<Mutex<HashMap<String, i64>>> = Arc::new(Mutex::new(HashMap::new()));
     let mut handles = vec![];
 
-    for batch in batches {
+    // Get the number of threads from execution.target_partitions
+    
+    let num_threads: usize = 4;
+
+    let batches_per_thread = (batches.len() + num_threads - 1) / num_threads;
+
+    for chunk in batches.chunks(batches_per_thread) {
+        let chunk = chunk.to_vec();
         let counts_ref = Arc::clone(&global_counts);
+
         let handle = thread::spawn(move || {
-            let col_idx = match batch.schema().index_of("sequence") {
-                Ok(idx) => idx,
-                Err(_) => return,
-            };
-
-            let array = match batch.column(col_idx).as_any().downcast_ref::<LargeStringArray>() {
-                Some(arr) => arr,
-                None => return,
-            };
-
             let mut local_counts = HashMap::new();
 
-            for i in 0..array.len() {
-                if !array.is_valid(i) {
-                    continue;
-                }
+            for batch in chunk {
+                let col_idx = match batch.schema().index_of("sequence") {
+                    Ok(idx) => idx,
+                    Err(_) => continue,
+                };
 
-                let seq = array.value(i).as_bytes();
-                if seq.len() < k {
-                    continue;
-                }
+                let array = match batch.column(col_idx).as_any().downcast_ref::<LargeStringArray>() {
+                    Some(arr) => arr,
+                    None => continue,
+                };
 
-                for j in 0..=seq.len() - k {
-                    let kmer = &seq[j..j + k];
-                    if kmer.iter().any(|&b| {
-                        !matches!(b, b'A' | b'C' | b'G' | b'T' | b'a' | b'c' | b'g' | b't')
-                    }) {
+                for i in 0..array.len() {
+                    if !array.is_valid(i) {
                         continue;
                     }
 
-                    let canonical = canonical_kmer(kmer);
-                    let kmer_str = String::from_utf8_lossy(&canonical).to_string();
-                    *local_counts.entry(kmer_str).or_insert(0) += 1;
+                    let seq = array.value(i).as_bytes();
+                    if seq.len() < k {
+                        continue;
+                    }
+
+                    for j in 0..=seq.len() - k {
+                        let kmer = &seq[j..j + k];
+                        if kmer.iter().any(|&b| {
+                            !matches!(b, b'A' | b'C' | b'G' | b'T' | b'a' | b'c' | b'g' | b't')
+                        }) {
+                            continue;
+                        }
+
+                        let canonical = canonical_kmer(kmer);
+                        let kmer_str = String::from_utf8_lossy(&canonical).to_string();
+                        *local_counts.entry(kmer_str).or_insert(0) += 1;
+                    }
                 }
             }
 

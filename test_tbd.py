@@ -6,7 +6,7 @@ from polars_bio.io import read_fastq
 df = read_fastq("tests/data/io/fastq/test.fastq")
 print(df)
 print(df.schema)
-counts = pb.count_kmers(df, k=3)
+counts = pb.count_kmers(df, k=3, threads=8)
 
 
 print(counts)

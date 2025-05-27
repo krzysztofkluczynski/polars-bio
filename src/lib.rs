@@ -47,12 +47,24 @@ pub fn py_count_kmer_from_reader(
     let rt = Runtime::new()?;
     let ctx = &py_ctx.ctx;
 
-    // Call common logic for k-mer computation
+    // Extract parallelism setting for debugging or future customization
+    let num_partitions = ctx
+        .session
+        .state()
+        .config()
+        .options()
+        .execution
+        .target_partitions;
+
+    log::debug!("Using {} thread partitions for k-mer computation", num_partitions);
+
+    // Call core k-mer computation
     let df = compute_kmers(ctx, &rt, LEFT_TABLE.to_string(), k)
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
     Ok(PyDataFrame::new(df))
 }
+
 
 
 #[pyfunction]
