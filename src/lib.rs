@@ -30,15 +30,18 @@ use crate::scan::{maybe_register_table, register_frame, register_table};
 use crate::streaming::RangeOperationScan;
 use crate::utils::convert_arrow_rb_schema_to_polars_df_schema;
 use std::collections::HashMap;
+use crate::kmers::do_count_kmers_mt;
 
 const LEFT_TABLE: &str = "s1";
 const RIGHT_TABLE: &str = "s2";
 const DEFAULT_COLUMN_NAMES: [&str; 3] = ["contig", "start", "end"];
 
-/// Count k-mers and return a native Python dict (via HashMap<String, u64>)
 #[pyfunction]
-pub fn py_count_kmer(sequences: Vec<String>, k: usize) -> PyResult<HashMap<String, u64>> {
-    Ok(kmers::do_count_kmers(sequences, k))
+pub fn py_count_kmer_mt(py: Python, sequences: Vec<String>, k: usize) -> PyResult<HashMap<String, u64>> {
+    // Allow other Python threads to run while this Rust code executes
+    py.allow_threads(|| {
+        Ok(do_count_kmers_mt(sequences, k))
+    })
 }
 
 
@@ -424,7 +427,7 @@ fn polars_bio(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_describe_vcf, m)?)?;
     m.add_function(wrap_pyfunction!(py_register_view, m)?)?;
     m.add_function(wrap_pyfunction!(py_from_polars, m)?)?;
-    m.add_function(wrap_pyfunction!(py_count_kmer, m)?)?;
+    m.add_function(wrap_pyfunction!(py_count_kmer_mt, m)?)?;
     // m.add_function(wrap_pyfunction!(unary_operation_scan, m)?)?;
     m.add_class::<PyBioSessionContext>()?;
     m.add_class::<FilterOp>()?;

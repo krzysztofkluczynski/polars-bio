@@ -1,12 +1,13 @@
 import polars as pl
-from polars_bio.polars_bio import py_count_kmer  # Rust -> dict
+from polars_bio.polars_bio import py_count_kmer_mt  # Rust multithreaded kmer count
 
-def count_kmers(
+def count_kmers_mt(
     df: pl.LazyFrame,
-    k: int = 5
+    k: int = 5,
+    column: str = "sequence"
 ) -> pl.DataFrame:
     """
-    Count k-mers from a Polars LazyFrame.
+    Count k-mers from a Polars LazyFrame using multi-threaded Rust backend.
 
     Parameters
     ----------
@@ -22,8 +23,8 @@ def count_kmers(
     pl.DataFrame
         DataFrame with two columns: kmer (str), count (int)
     """
-    sequences = df.select("sequence").collect()["sequence"].to_list()
-    raw_counts = py_count_kmer(sequences, k)
+    sequences = df.select(column).collect()[column].to_list()
+    raw_counts = py_count_kmer_mt(sequences, k)
 
     return pl.DataFrame({
         "kmer": list(raw_counts.keys()),

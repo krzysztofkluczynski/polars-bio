@@ -1,7 +1,7 @@
 import polars_bio as pb
 import pandas as pd
 from polars_bio.io import read_fastq
-
+import time
 
 df1 = pd.DataFrame([
     ['chr1', 1, 5],
@@ -18,8 +18,11 @@ columns=['chrom', 'start', 'end' ]
 )
 counts = pb.count_overlaps(df1, df2, output_type="pandas.DataFrame")
 
-df = read_fastq("tests/data/io/fastq/test.fastq")
-counts = pb.count_kmers(df, k=3)
+df = read_fastq("example.fastq")
+start_time = time.time()
+counts = pb.count_kmers_mt(df, k=3)
+end_time = time.time()
+print(end_time - start_time)
 print(counts)
 
 
