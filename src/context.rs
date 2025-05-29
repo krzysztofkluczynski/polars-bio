@@ -8,6 +8,9 @@ use log::debug;
 use pyo3::{pyclass, pymethods, PyResult};
 use sequila_core::session_context::SequilaConfig;
 
+use crate::kmers_udaf::create_kmer_count_udaf;
+
+
 #[pyclass(name = "BioSessionContext")]
 // #[derive(Clone)]
 pub struct PyBioSessionContext {
@@ -24,6 +27,7 @@ impl PyBioSessionContext {
     #[new]
     pub fn new(seed: String, catalog_dir: String) -> PyResult<Self> {
         let ctx = create_context().unwrap();
+        ctx.session.register_udaf(create_kmer_count_udaf(5));        
         let session_config: HashMap<String, String> = HashMap::new();
 
         Ok(PyBioSessionContext {

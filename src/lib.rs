@@ -7,6 +7,7 @@ mod streaming;
 mod udtf;
 mod utils;
 pub mod kmers;
+pub mod kmers_udaf;
 
 use std::string::ToString;
 use std::sync::{Arc, Mutex};
