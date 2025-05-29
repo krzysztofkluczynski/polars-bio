@@ -1,4 +1,14 @@
+use arrow::array::{Array, Int64Array, LargeStringArray};
+use arrow::datatypes::{DataType, Field, Schema};
+use arrow::record_batch::RecordBatch;
+use datafusion::dataframe::DataFrame;
+use datafusion::error::Result;
+use exon::ExonSession;
 use std::collections::HashMap;
+use std::error::Error;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use tokio::runtime::Runtime;
 
 /// Reverse complement of a DNA sequence
 fn reverse_complement(seq: &[u8]) -> Vec<u8> {
@@ -9,12 +19,12 @@ fn reverse_complement(seq: &[u8]) -> Vec<u8> {
             b'T' | b't' => b'A',
             b'C' | b'c' => b'G',
             b'G' | b'g' => b'C',
-            _ => b'N', // Ambiguous base
+            _ => b'N',
         })
         .collect()
 }
 
-/// Return canonical form of a k-mer: lexicographically smaller of forward and reverse complement
+/// Canonical form of a k-mer
 fn canonical_kmer(kmer: &[u8]) -> Vec<u8> {
     let rc = reverse_complement(kmer);
     if rc.as_slice() < kmer {
@@ -24,29 +34,106 @@ fn canonical_kmer(kmer: &[u8]) -> Vec<u8> {
     }
 }
 
-/// Count canonical k-mers in given DNA sequences
-pub fn do_count_kmers(sequences: Vec<String>, k: usize) -> HashMap<String, u64> {
-    let mut counts = HashMap::new();
+/// Count canonical k-mers from a table and return a DataFrame
+pub fn compute_kmers(
+    ctx: &ExonSession,
+    rt: &Runtime,
+    table_name: String,
+    k: usize,
+    num_threads: usize,
+) -> Result<DataFrame, Box<dyn Error>> {
+    let query = format!("SELECT sequence FROM {}", table_name);
+    let df = rt.block_on(ctx.sql(&query))?;
+    let batches = rt.block_on(df.collect())?;
 
-    for seq in sequences {
-        let bytes = seq.as_bytes();
-        if bytes.len() < k {
-            continue;
-        }
+    let global_counts: Arc<Mutex<HashMap<String, i64>>> = Arc::new(Mutex::new(HashMap::new()));
+    let mut handles = vec![];
 
-        for i in 0..=bytes.len() - k {
-            let kmer = &bytes[i..i + k];
+    let num_threads = num_threads.max(1); // ensure >=1
+    let batches_per_thread = (batches.len() + num_threads - 1) / num_threads;
+    
+    println!(
+        "K-mer compute using {} thread(s), {} batch(es) total, ~{} batch(es)/thread",
+        num_threads,
+        batches.len(),
+        batches_per_thread
+    );
 
-            // Skip invalid k-mers with non-ACGT characters
-            if kmer.iter().any(|&b| !matches!(b, b'A' | b'C' | b'G' | b'T' | b'a' | b'c' | b'g' | b't')) {
-                continue;
+    for chunk in batches.chunks(batches_per_thread) {
+        let chunk = chunk.to_vec();
+        let counts_ref = Arc::clone(&global_counts);
+
+        let handle = thread::spawn(move || {
+            let mut local_counts = HashMap::new();
+
+            for batch in chunk {
+                let col_idx = match batch.schema().index_of("sequence") {
+                    Ok(idx) => idx,
+                    Err(_) => continue,
+                };
+
+                let array = match batch.column(col_idx).as_any().downcast_ref::<LargeStringArray>() {
+                    Some(arr) => arr,
+                    None => continue,
+                };
+
+                for i in 0..array.len() {
+                    if !array.is_valid(i) {
+                        continue;
+                    }
+
+                    let seq = array.value(i).as_bytes();
+                    if seq.len() < k {
+                        continue;
+                    }
+
+                    for j in 0..=seq.len() - k {
+                        let kmer = &seq[j..j + k];
+                        if kmer.iter().any(|&b| {
+                            !matches!(b, b'A' | b'C' | b'G' | b'T' | b'a' | b'c' | b'g' | b't')
+                        }) {
+                            continue;
+                        }
+
+                        let canonical = canonical_kmer(kmer);
+                        let kmer_str = String::from_utf8_lossy(&canonical).to_string();
+                        *local_counts.entry(kmer_str).or_insert(0) += 1;
+                    }
+                }
             }
 
-            let canonical = canonical_kmer(kmer);
-            let kmer_str = String::from_utf8_lossy(&canonical).to_string();
-            *counts.entry(kmer_str).or_insert(0) += 1;
-        }
+            let mut shared = counts_ref.lock().unwrap();
+            for (k, v) in local_counts {
+                *shared.entry(k).or_insert(0) += v;
+            }
+        });
+
+        handles.push(handle);
     }
 
-    counts
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    // Prepare result RecordBatch
+    let counts = Arc::try_unwrap(global_counts).unwrap().into_inner().unwrap();
+    let kmers: Vec<&str> = counts.keys().map(|s| s.as_str()).collect();
+    let count_vals: Vec<i64> = kmers.iter().map(|k| *counts.get(*k).unwrap_or(&0)).collect();
+
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("kmer", DataType::LargeUtf8, false),
+        Field::new("count", DataType::Int64, false),
+    ]));
+
+    let batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(LargeStringArray::from(kmers)) as _,
+            Arc::new(Int64Array::from(count_vals)) as _,
+        ],
+    )?;
+
+    ctx.session.register_batch("kmers_result", batch).ok();
+    let df = rt.block_on(ctx.session.table("kmers_result"))?;
+    Ok(df)
 }

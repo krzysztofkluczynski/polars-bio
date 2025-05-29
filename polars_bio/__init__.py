@@ -17,7 +17,7 @@ from .polars_ext import PolarsRangesOperations as LazyFrame
 from .range_op import FilterOp, count_overlaps, coverage, merge, nearest, overlap
 from .range_viz import visualize_intervals
 POLARS_BIO_MAX_THREADS = "datafusion.execution.target_partitions"
-from .count_kmers import count_kmers
+from .count_kmers import count_kmers, plot_kmer_counts
 
 __version__ = "0.6.3"
 __all__ = [
@@ -44,5 +44,6 @@ __all__ = [
     "ReadOptions",
     "VcfReadOptions",
     "set_option",
-    "count_kmers"
+    "count_kmers",
+    "plot_kmer_counts",
 ]

@@ -1,25 +1,18 @@
 import polars_bio as pb
 import pandas as pd
 from polars_bio.io import read_fastq
+import polars as pl
 
 
-df1 = pd.DataFrame([
-    ['chr1', 1, 5],
-    ['chr1', 3, 8],
-    ['chr1', 8, 10],
-    ['chr1', 12, 14]],
-columns=['chrom', 'start', 'end']
-)
 
-df2 = pd.DataFrame(
-[['chr1', 4, 8],
-['chr1', 10, 11]],
-columns=['chrom', 'start', 'end' ]
-)
-counts = pb.count_overlaps(df1, df2, output_type="pandas.DataFrame")
+df = read_fastq("example2.fastq")
 
-df = read_fastq("tests/data/io/fastq/test.fastq")
-counts = pb.count_kmers(df, k=3)
-print(counts)
+print(df)
+print(df.schema)
+pl.Config.set_tbl_rows(100)
+print(pb.sql("SELECT kmer_count(sequence) FROM example2 LIMIT 60").collect())
 
 
+#counts = pb.count_kmers(df, k=5, threads=8)
+#pb.plot_kmer_counts(counts, top_n=30, filepath="kmers.png")
+#print(counts)
