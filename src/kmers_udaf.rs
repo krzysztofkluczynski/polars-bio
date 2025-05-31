@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow_array::{ArrayRef, StringArray, Int64Array, StructArray};
+use arrow_array::{StringArray, Int64Array, StructArray};
 use arrow_array::builder::{StringBuilder, Int64Builder};
 use arrow_schema::{DataType, Field, Fields};
 use datafusion::common::Result;
