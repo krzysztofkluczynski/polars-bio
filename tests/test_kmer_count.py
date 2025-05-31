@@ -31,3 +31,10 @@ def test_kmer_count_invalid_k_raises():
         pb.sql("SELECT kmer_count(sequence, -2) AS result FROM example").collect()
 
     assert "k must be greater than 0" in str(exc_info.value)
+
+def test_plot_kmer_counts_raises_on_top_n_too_high():
+    read_fastq("example.fastq")
+    result = pb.sql("SELECT kmer_count(sequence, 5) FROM example").collect()
+
+    with pytest.raises(ValueError, match="must not exceed 100"):
+        pb.plot_kmer_counts(result, top_n=101)

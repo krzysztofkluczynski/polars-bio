@@ -19,13 +19,19 @@ def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | 
     if top_n > 100:
         raise ValueError("Parameter 'top_n' must not exceed 100.")
 
-    if "result" not in sql_result.columns:
-        raise ValueError("SQL result must contain 'result' column.")
+    # Find the first struct column
+    struct_col = next(
+        (name for name, dtype in sql_result.schema.items() if isinstance(dtype, pl.Struct)),
+        None
+    )
+
+    if struct_col is None:
+        raise ValueError("No struct column found in the SQL result. Expected a column with kmer/count struct.")
 
     # Extract fields from struct
     unnested = sql_result.select([
-        pl.col("result").struct.field("kmer"),
-        pl.col("result").struct.field("count")
+        pl.col(struct_col).struct.field("kmer"),
+        pl.col(struct_col).struct.field("count")
     ])
 
     # Aggregate and sort
@@ -39,6 +45,10 @@ def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | 
     height_per_bar = 0.4
     fig_height = max(4, len(kmers) * height_per_bar)
 
+    # Adaptive margin based on top_n
+    y_margin = 0.000333 * top_n + 0.01667
+    y_margin = min(max(y_margin, 0.01), 0.06)
+
     # Plot
     plt.figure(figsize=(10, fig_height))
     bars = plt.barh(kmers, counts)
@@ -46,14 +56,13 @@ def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | 
     plt.ylabel("k-mer")
     plt.title(f"Top {top_n} k-mers")
     plt.gca().invert_yaxis()
-    plt.gca().margins(y=0.005) #plt.gca().margins(y=0.005 * (101 - top_n))
+    plt.gca().margins(y=y_margin)
     plt.tight_layout()
-
 
     # Add text labels next to bars
     for bar, count in zip(bars, counts):
         width = bar.get_width()
-        plt.text(width + max(counts) * 0.01, bar.get_y() + bar.get_height()/2,
+        plt.text(width + max(counts) * 0.01, bar.get_y() + bar.get_height() / 2,
                  f"{count}", va='center', fontsize=9)
 
     if filepath:
@@ -61,6 +70,7 @@ def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | 
         plt.close()
     else:
         plt.show()
+
 
 
 
