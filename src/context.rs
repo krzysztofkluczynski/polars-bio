@@ -27,7 +27,7 @@ impl PyBioSessionContext {
     #[new]
     pub fn new(seed: String, catalog_dir: String) -> PyResult<Self> {
         let ctx = create_context().unwrap();
-        ctx.session.register_udaf(create_kmer_count_udaf(5));        
+        ctx.session.register_udaf(create_kmer_count_udaf());        
         let session_config: HashMap<String, String> = HashMap::new();
 
         Ok(PyBioSessionContext {

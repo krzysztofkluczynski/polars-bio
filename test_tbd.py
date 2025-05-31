@@ -10,7 +10,7 @@ df = read_fastq("example2.fastq")
 print(df)
 print(df.schema)
 pl.Config.set_tbl_rows(100)
-print(pb.sql("SELECT kmer_count(sequence) FROM example2 LIMIT 60").collect())
+print(pb.sql("SELECT kmer_count(sequence, 5) FROM example2 LIMIT 60").collect())
 
 
 #counts = pb.count_kmers(df, k=5, threads=8)
