@@ -1,0 +1,548 @@
+{
+    "values": [
+        {
+            "count": 177,
+            "k_mer": "ACCT"
+        },
+        {
+            "count": 178,
+            "k_mer": "ACCA"
+        },
+        {
+            "count": 159,
+            "k_mer": "AATA"
+        },
+        {
+            "count": 98,
+            "k_mer": "ATAC"
+        },
+        {
+            "count": 237,
+            "k_mer": "AAAG"
+        },
+        {
+            "count": 138,
+            "k_mer": "ATGC"
+        },
+        {
+            "count": 161,
+            "k_mer": "AAAC"
+        },
+        {
+            "count": 30,
+            "k_mer": "AACG"
+        },
+        {
+            "count": 37,
+            "k_mer": "ACGC"
+        },
+        {
+            "count": 181,
+            "k_mer": "AATG"
+        },
+        {
+            "count": 181,
+            "k_mer": "ATGA"
+        },
+        {
+            "count": 137,
+            "k_mer": "AATC"
+        },
+        {
+            "count": 173,
+            "k_mer": "TACA"
+        },
+        {
+            "count": 73,
+            "k_mer": "TTAA"
+        },
+        {
+            "count": 158,
+            "k_mer": "TAAA"
+        },
+        {
+            "count": 234,
+            "k_mer": "AAAT"
+        },
+        {
+            "count": 177,
+            "k_mer": "TCAA"
+        },
+        {
+            "count": 257,
+            "k_mer": "AAGA"
+        },
+        {
+            "count": 204,
+            "k_mer": "AAGG"
+        },
+        {
+            "count": 184,
+            "k_mer": "AGGC"
+        },
+        {
+            "count": 192,
+            "k_mer": "AGAT"
+        },
+        {
+            "count": 135,
+            "k_mer": "ATAA"
+        },
+        {
+            "count": 223,
+            "k_mer": "TCCA"
+        },
+        {
+            "count": 133,
+            "k_mer": "TAGA"
+        },
+        {
+            "count": 132,
+            "k_mer": "ACTC"
+        },
+        {
+            "count": 144,
+            "k_mer": "AACT"
+        },
+        {
+            "count": 110,
+            "k_mer": "TGCA"
+        },
+        {
+            "count": 64,
+            "k_mer": "TATA"
+        },
+        {
+            "count": 101,
+            "k_mer": "ATAG"
+        },
+        {
+            "count": 212,
+            "k_mer": "TGAA"
+        },
+        {
+            "count": 23,
+            "k_mer": "TCGA"
+        },
+        {
+            "count": 220,
+            "k_mer": "CAAA"
+        },
+        {
+            "count": 115,
+            "k_mer": "CATA"
+        },
+        {
+            "count": 218,
+            "k_mer": "CCCA"
+        },
+        {
+            "count": 284,
+            "k_mer": "CTCC"
+        },
+        {
+            "count": 232,
+            "k_mer": "CTTC"
+        },
+        {
+            "count": 112,
+            "k_mer": "CTAC"
+        },
+        {
+            "count": 90,
+            "k_mer": "CCTA"
+        },
+        {
+            "count": 87,
+            "k_mer": "CATG"
+        },
+        {
+            "count": 118,
+            "k_mer": "CTTA"
+        },
+        {
+            "count": 59,
+            "k_mer": "CGCC"
+        },
+        {
+            "count": 151,
+            "k_mer": "CCAA"
+        },
+        {
+            "count": 201,
+            "k_mer": "CTCA"
+        },
+        {
+            "count": 230,
+            "k_mer": "CTGC"
+        },
+        {
+            "count": 183,
+            "k_mer": "ATCA"
+        },
+        {
+            "count": 152,
+            "k_mer": "AAGC"
+        },
+        {
+            "count": 189,
+            "k_mer": "AGCA"
+        },
+        {
+            "count": 80,
+            "k_mer": "ATAT"
+        },
+        {
+            "count": 284,
+            "k_mer": "CCAG"
+        },
+        {
+            "count": 267,
+            "k_mer": "CAGG"
+        },
+        {
+            "count": 187,
+            "k_mer": "CTGA"
+        },
+        {
+            "count": 236,
+            "k_mer": "CACA"
+        },
+        {
+            "count": 113,
+            "k_mer": "CAAC"
+        },
+        {
+            "count": 198,
+            "k_mer": "CATC"
+        },
+        {
+            "count": 199,
+            "k_mer": "CAAG"
+        },
+        {
+            "count": 260,
+            "k_mer": "CCTC"
+        },
+        {
+            "count": 222,
+            "k_mer": "CAGA"
+        },
+        {
+            "count": 48,
+            "k_mer": "CTAG"
+        },
+        {
+            "count": 31,
+            "k_mer": "CGAC"
+        },
+        {
+            "count": 38,
+            "k_mer": "CCGG"
+        },
+        {
+            "count": 68,
+            "k_mer": "CGGC"
+        },
+        {
+            "count": 72,
+            "k_mer": "CACG"
+        },
+        {
+            "count": 235,
+            "k_mer": "CAGC"
+        },
+        {
+            "count": 162,
+            "k_mer": "CCCC"
+        },
+        {
+            "count": 68,
+            "k_mer": "CCCG"
+        },
+        {
+            "count": 58,
+            "k_mer": "CCGA"
+        },
+        {
+            "count": 54,
+            "k_mer": "CCGC"
+        },
+        {
+            "count": 10,
+            "k_mer": "CGCG"
+        },
+        {
+            "count": 51,
+            "k_mer": "CGTC"
+        },
+        {
+            "count": 199,
+            "k_mer": "AGTG"
+        },
+        {
+            "count": 175,
+            "k_mer": "ACTG"
+        },
+        {
+            "count": 196,
+            "k_mer": "AGCC"
+        },
+        {
+            "count": 122,
+            "k_mer": "ATTA"
+        },
+        {
+            "count": 76,
+            "k_mer": "AATT"
+        },
+        {
+            "count": 175,
+            "k_mer": "ACAC"
+        },
+        {
+            "count": 86,
+            "k_mer": "ACTA"
+        },
+        {
+            "count": 123,
+            "k_mer": "AGTC"
+        },
+        {
+            "count": 193,
+            "k_mer": "AACA"
+        },
+        {
+            "count": 183,
+            "k_mer": "ACAT"
+        },
+        {
+            "count": 244,
+            "k_mer": "AGAG"
+        },
+        {
+            "count": 265,
+            "k_mer": "AGGA"
+        },
+        {
+            "count": 119,
+            "k_mer": "AACC"
+        },
+        {
+            "count": 126,
+            "k_mer": "AGAC"
+        },
+        {
+            "count": 207,
+            "k_mer": "ACAG"
+        },
+        {
+            "count": 103,
+            "k_mer": "AGTA"
+        },
+        {
+            "count": 221,
+            "k_mer": "GGGA"
+        },
+        {
+            "count": 190,
+            "k_mer": "GCCA"
+        },
+        {
+            "count": 150,
+            "k_mer": "GAGC"
+        },
+        {
+            "count": 153,
+            "k_mer": "GACA"
+        },
+        {
+            "count": 220,
+            "k_mer": "GGAA"
+        },
+        {
+            "count": 80,
+            "k_mer": "GTTA"
+        },
+        {
+            "count": 50,
+            "k_mer": "GTAC"
+        },
+        {
+            "count": 128,
+            "k_mer": "GTCA"
+        },
+        {
+            "count": 89,
+            "k_mer": "GATA"
+        },
+        {
+            "count": 58,
+            "k_mer": "GATC"
+        },
+        {
+            "count": 239,
+            "k_mer": "GAGA"
+        },
+        {
+            "count": 95,
+            "k_mer": "GCTA"
+        },
+        {
+            "count": 187,
+            "k_mer": "GGCA"
+        },
+        {
+            "count": 132,
+            "k_mer": "GCAC"
+        },
+        {
+            "count": 95,
+            "k_mer": "GTAA"
+        },
+        {
+            "count": 250,
+            "k_mer": "GAAA"
+        },
+        {
+            "count": 138,
+            "k_mer": "GGAC"
+        },
+        {
+            "count": 30,
+            "k_mer": "GCGC"
+        },
+        {
+            "count": 144,
+            "k_mer": "GCCC"
+        },
+        {
+            "count": 103,
+            "k_mer": "GACC"
+        },
+        {
+            "count": 73,
+            "k_mer": "GGCC"
+        },
+        {
+            "count": 174,
+            "k_mer": "GTGA"
+        },
+        {
+            "count": 111,
+            "k_mer": "GGTA"
+        },
+        {
+            "count": 146,
+            "k_mer": "GCAA"
+        },
+        {
+            "count": 33,
+            "k_mer": "GCGA"
+        },
+        {
+            "count": 59,
+            "k_mer": "CGGA"
+        },
+        {
+            "count": 202,
+            "k_mer": "CCAC"
+        },
+        {
+            "count": 55,
+            "k_mer": "CGAG"
+        },
+        {
+            "count": 131,
+            "k_mer": "GAAC"
+        },
+        {
+            "count": 42,
+            "k_mer": "ACCG"
+        },
+        {
+            "count": 195,
+            "k_mer": "AGGG"
+        },
+        {
+            "count": 172,
+            "k_mer": "ATGG"
+        },
+        {
+            "count": 186,
+            "k_mer": "ACAA"
+        },
+        {
+            "count": 371,
+            "k_mer": "AAAA"
+        },
+        {
+            "count": 60,
+            "k_mer": "AGCG"
+        },
+        {
+            "count": 122,
+            "k_mer": "ATCC"
+        },
+        {
+            "count": 24,
+            "k_mer": "ACGT"
+        },
+        {
+            "count": 176,
+            "k_mer": "AAGT"
+        },
+        {
+            "count": 114,
+            "k_mer": "ACCC"
+        },
+        {
+            "count": 47,
+            "k_mer": "ATCG"
+        },
+        {
+            "count": 145,
+            "k_mer": "ATTC"
+        },
+        {
+            "count": 47,
+            "k_mer": "ACGG"
+        },
+        {
+            "count": 42,
+            "k_mer": "ACGA"
+        },
+        {
+            "count": 175,
+            "k_mer": "CACC"
+        },
+        {
+            "count": 102,
+            "k_mer": "CTAA"
+        },
+        {
+            "count": 45,
+            "k_mer": "CGCA"
+        },
+        {
+            "count": 19,
+            "k_mer": "CGTA"
+        },
+        {
+            "count": 47,
+            "k_mer": "CGAA"
+        },
+        {
+            "count": 127,
+            "k_mer": "ATTG"
+        },
+        {
+            "count": 283,
+            "k_mer": "AGAA"
+        },
+        {
+            "count": 93,
+            "k_mer": "AGCT"
+        }
+    ]
+}
