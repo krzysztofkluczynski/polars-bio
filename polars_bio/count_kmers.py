@@ -7,38 +7,60 @@ from .context import ctx
 
 import matplotlib.pyplot as plt
 
-def plot_kmer_counts(df: pl.DataFrame, top_n: int = 20, filepath: str | None = None):
-    """
-    Visualize the top N most frequent k-mers as a bar chart.
+import matplotlib.pyplot as plt
+import polars as pl
 
-    Parameters:
-    - df: pl.DataFrame with columns "kmer" and "count"
-    - top_n: Number of top k-mers to display
-    - filepath: Optional path to save the plot. If None, shows interactively.
+def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | None = None):
     """
-    if "kmer" not in df.columns or "count" not in df.columns:
-        raise ValueError("DataFrame must contain 'kmer' and 'count' columns.")
-    
-    # Sort and extract top N
-    sorted_df = df.sort("count", descending=True).head(top_n)
-    
+    Takes a SQL result, extracts fields,
+    aggregates counts, and plots a horizontal bar chart with k-mers on the y-axis.
+    Dynamically adjusts height and adds labels with exact counts.
+    """
+    if top_n > 100:
+        raise ValueError("Parameter 'top_n' must not exceed 100.")
+
+    if "result" not in sql_result.columns:
+        raise ValueError("SQL result must contain 'result' column.")
+
+    # Extract fields from struct
+    unnested = sql_result.select([
+        pl.col("result").struct.field("kmer"),
+        pl.col("result").struct.field("count")
+    ])
+
+    # Aggregate and sort
+    aggregated = unnested.group_by("kmer").agg(pl.sum("count").alias("count"))
+    sorted_df = aggregated.sort("count", descending=True).head(top_n)
+
     kmers = sorted_df["kmer"].to_list()
     counts = sorted_df["count"].to_list()
 
-    plt.figure(figsize=(12, 6))
-    plt.bar(kmers, counts)
-    plt.xticks(rotation=90)
-    plt.xlabel("k-mer")
-    plt.ylabel("Count")
+    # Dynamic figure height
+    height_per_bar = 0.4
+    fig_height = max(4, len(kmers) * height_per_bar)
+
+    # Plot
+    plt.figure(figsize=(10, fig_height))
+    bars = plt.barh(kmers, counts)
+    plt.xlabel("Count")
+    plt.ylabel("k-mer")
     plt.title(f"Top {top_n} k-mers")
+    plt.gca().invert_yaxis()
+    plt.gca().margins(y=0.005) #plt.gca().margins(y=0.005 * (101 - top_n))
     plt.tight_layout()
+
+
+    # Add text labels next to bars
+    for bar, count in zip(bars, counts):
+        width = bar.get_width()
+        plt.text(width + max(counts) * 0.01, bar.get_y() + bar.get_height()/2,
+                 f"{count}", va='center', fontsize=9)
 
     if filepath:
         plt.savefig(filepath, dpi=300)
         plt.close()
     else:
         plt.show()
-
 
 
 
