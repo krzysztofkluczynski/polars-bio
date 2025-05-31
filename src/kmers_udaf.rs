@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow_array::{ArrayRef, StringArray, UInt64Array, StructArray};
-use arrow_array::builder::{StringBuilder, UInt64Builder};
+use arrow_array::{ArrayRef, StringArray, Int64Array, StructArray};
+use arrow_array::builder::{StringBuilder, Int64Builder};
 use arrow_schema::{DataType, Field, Fields};
 use datafusion::common::Result;
 use datafusion::logical_expr::{Volatility, AggregateUDF, create_udaf};
@@ -10,22 +10,23 @@ use datafusion::physical_plan::Accumulator;
 use datafusion::logical_expr::function::AccumulatorArgs;
 use datafusion::scalar::ScalarValue;
 use arrow_array::Array;
+use datafusion::common::DataFusionError;
 
-pub fn create_kmer_count_udaf(k: usize) -> AggregateUDF {
-    let accumulator_creator = move |_args: AccumulatorArgs<'_>| -> Result<Box<dyn Accumulator>> {
-        Ok(Box::new(KmerCountAccumulator::new(k)))
+pub fn create_kmer_count_udaf() -> AggregateUDF {
+    let accumulator_creator = |_args: AccumulatorArgs<'_>| -> Result<Box<dyn Accumulator>> {
+        Ok(Box::new(KmerCountAccumulator::new()))
     };
 
     let return_type = Arc::new(DataType::Struct(Fields::from(vec![
         Field::new("kmer", DataType::Utf8, false),
-        Field::new("count", DataType::UInt64, false),
+        Field::new("count", DataType::Int64, false),
     ])));
 
-    let state_type = vec![DataType::Utf8, DataType::UInt64]; // serialized form of map (flattened list later)
+    let state_type = vec![DataType::Utf8, DataType::Int64]; // for merge_batch()
 
     create_udaf(
         "kmer_count",
-        vec![DataType::Utf8],
+        vec![DataType::Utf8, DataType::Int64], // sequence and k
         return_type,
         Volatility::Immutable,
         Arc::new(accumulator_creator),
@@ -35,14 +36,14 @@ pub fn create_kmer_count_udaf(k: usize) -> AggregateUDF {
 
 #[derive(Debug)]
 struct KmerCountAccumulator {
-    k: usize,
-    counts: HashMap<String, u64>,
+    k: Option<usize>,
+    counts: HashMap<String, i64>,
 }
 
 impl KmerCountAccumulator {
-    fn new(k: usize) -> Self {
+    fn new() -> Self {
         Self {
-            k,
+            k: None,
             counts: HashMap::new(),
         }
     }
@@ -65,21 +66,44 @@ impl KmerCountAccumulator {
 
 impl Accumulator for KmerCountAccumulator {
     fn update_batch(&mut self, values: &[Arc<dyn Array>]) -> Result<()> {
-        let array = values[0]
+        let seq_array = values[0]
             .as_any()
             .downcast_ref::<StringArray>()
             .expect("Expected StringArray");
+        let k_array = values[1]
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .expect("Expected Int64Array");
 
-        for i in 0..array.len() {
-            if array.is_null(i) {
+        for i in 0..seq_array.len() {
+            if seq_array.is_null(i) || k_array.is_null(i) {
                 continue;
             }
-            let seq = array.value(i).as_bytes();
-            if seq.len() < self.k {
+
+            let seq = seq_array.value(i).as_bytes();
+            let k_val = k_array.value(i);
+            if k_val <= 0 {
+                return Err(DataFusionError::Execution("k must be greater than 0".into()));
+            }
+
+            let k_val = k_val as usize;
+
+            // First batch: set k once
+            if self.k.is_none() {
+                self.k = Some(k_val);
+            }
+
+            // Enforce consistent k within accumulator instance
+            if self.k.unwrap() != k_val {
+                return Err(DataFusionError::Execution("Inconsistent k-mer size in UDAF batch".into()));
+            }
+
+            if seq.len() < k_val {
                 continue;
             }
-            for j in 0..=(seq.len() - self.k) {
-                let window = &seq[j..j + self.k];
+
+            for j in 0..=(seq.len() - k_val) {
+                let window = &seq[j..j + k_val];
                 if window.iter().all(|&b| matches!(b, b'A' | b'C' | b'G' | b'T' | b'a' | b'c' | b'g' | b't')) {
                     let canonical = Self::canonical_kmer(window);
                     let kmer_str = String::from_utf8_lossy(&canonical).to_string();
@@ -99,8 +123,8 @@ impl Accumulator for KmerCountAccumulator {
 
         let counts = states[1]
             .as_any()
-            .downcast_ref::<UInt64Array>()
-            .expect("Expected UInt64Array for count");
+            .downcast_ref::<Int64Array>()
+            .expect("Expected Int64Array for count");
 
         for i in 0..kmers.len() {
             if kmers.is_null(i) || counts.is_null(i) {
@@ -120,7 +144,7 @@ impl Accumulator for KmerCountAccumulator {
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
         let mut kmer_builder = StringBuilder::new();
-        let mut count_builder = UInt64Builder::new();
+        let mut count_builder = Int64Builder::new();
 
         for (kmer, count) in &self.counts {
             kmer_builder.append_value(kmer);
@@ -133,7 +157,7 @@ impl Accumulator for KmerCountAccumulator {
         let struct_array = StructArray::new(
             Fields::from(vec![
                 Field::new("kmer", DataType::Utf8, false),
-                Field::new("count", DataType::UInt64, false),
+                Field::new("count", DataType::Int64, false),
             ]),
             vec![kmer_array, count_array],
             None,
