@@ -54,7 +54,7 @@ def plot_kmer_counts(sql_result: pl.DataFrame, top_n: int = 20, filepath: str | 
     bars = plt.barh(kmers, counts)
     plt.xlabel("Count")
     plt.ylabel("k-mer")
-    plt.title(f"Top {top_n} k-mers")
+    plt.title(f"Top {min(top_n, len(sorted_df))} k-mers (of {aggregated.height} total)")
     plt.gca().invert_yaxis()
     plt.gca().margins(y=y_margin)
     plt.tight_layout()
