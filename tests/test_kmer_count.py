@@ -25,7 +25,7 @@ def test_kmer_count_matches_expected():
     run_kmer_test(5, "fastqc-rs_output/fastqc_kmer5.json")
 
 def test_kmer_count_invalid_k_raises():
-    read_fastq("example.fastq")  # rejestruje tabelę 'example'
+    read_fastq("example.fastq")
 
     with pytest.raises(Exception) as exc_info:
         pb.sql("SELECT kmer_count(sequence, -2) AS result FROM example").collect()
