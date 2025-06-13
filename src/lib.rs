@@ -6,7 +6,6 @@ mod scan;
 mod streaming;
 mod udtf;
 mod utils;
-pub mod kmers;
 pub mod kmers_udaf;
 
 use std::string::ToString;
@@ -30,40 +29,10 @@ use crate::option::{
 use crate::scan::{maybe_register_table, register_frame, register_table};
 use crate::streaming::RangeOperationScan;
 use crate::utils::convert_arrow_rb_schema_to_polars_df_schema;
-use crate::kmers::compute_kmers;
 
 const LEFT_TABLE: &str = "s1";
 const RIGHT_TABLE: &str = "s2";
 const DEFAULT_COLUMN_NAMES: [&str; 3] = ["contig", "start", "end"];
-
-#[pyfunction]
-pub fn py_count_kmer_from_reader(
-    py_ctx: &PyBioSessionContext,
-    df1: PyArrowType<ArrowArrayStreamReader>,
-    k: usize,
-) -> PyResult<PyDataFrame> {
-
-    register_frame(py_ctx, df1, LEFT_TABLE.to_string());
-
-    let rt = Runtime::new()?;
-    let ctx = &py_ctx.ctx;
-
-    let temp_target_partitions = py_ctx.get_option("datafusion.execution.target_partitions");
-    let num_threads = match temp_target_partitions {
-        Some(val) => val.parse::<usize>().unwrap_or(1),
-        None => 1,
-    };
-
-    log::debug!("Using {} thread partitions for k-mer computation", num_threads);
-
-    let df = compute_kmers(ctx, &rt, LEFT_TABLE.to_string(), k, num_threads)
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-
-    Ok(PyDataFrame::new(df))
-}
-
-
-
 
 #[pyfunction]
 #[pyo3(signature = (py_ctx, df1, df2, range_options, limit=None))]
@@ -447,7 +416,6 @@ fn polars_bio(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_describe_vcf, m)?)?;
     m.add_function(wrap_pyfunction!(py_register_view, m)?)?;
     m.add_function(wrap_pyfunction!(py_from_polars, m)?)?;
-    m.add_function(wrap_pyfunction!(py_count_kmer_from_reader, m)?)?;
     // m.add_function(wrap_pyfunction!(unary_operation_scan, m)?)?;
     m.add_class::<PyBioSessionContext>()?;
     m.add_class::<FilterOp>()?;
