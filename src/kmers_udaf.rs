@@ -22,11 +22,11 @@ pub fn create_kmer_count_udaf() -> AggregateUDF {
         Field::new("count", DataType::Int64, false),
     ])));
 
-    let state_type = vec![DataType::Utf8, DataType::Int64]; // for merge_batch()
+    let state_type = vec![DataType::Utf8, DataType::Int64];
 
     create_udaf(
         "kmer_count",
-        vec![DataType::Utf8, DataType::Int64], // sequence and k
+        vec![DataType::Utf8, DataType::Int64],
         return_type,
         Volatility::Immutable,
         Arc::new(accumulator_creator),
@@ -88,12 +88,10 @@ impl Accumulator for KmerCountAccumulator {
 
             let k_val = k_val as usize;
 
-            // First batch: set k once
             if self.k.is_none() {
                 self.k = Some(k_val);
             }
 
-            // Enforce consistent k within accumulator instance
             if self.k.unwrap() != k_val {
                 return Err(DataFusionError::Execution("Inconsistent k-mer size in UDAF batch".into()));
             }
@@ -139,7 +137,7 @@ impl Accumulator for KmerCountAccumulator {
     }
 
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
-        Ok(vec![]) // nieużywane na razie
+        Ok(vec![])
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
