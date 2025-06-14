@@ -48,7 +48,6 @@ impl CountOverlapsProvider {
         filter_op: FilterOp,
         coverage: bool,
     ) -> Self {
-            println!("121233123213213123:");
         Self {
             session,
             left_table,
